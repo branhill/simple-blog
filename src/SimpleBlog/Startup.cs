@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleBlog.Data;
 using SimpleBlog.Infrastructures;
+using SimpleBlog.Models;
 
 namespace SimpleBlog
 {
@@ -27,7 +28,7 @@ namespace SimpleBlog
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>()
+            services.AddDefaultIdentity<User>()
                 .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<AppDbContext>();
 
