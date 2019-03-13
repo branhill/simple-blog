@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SimpleBlog.Data;
 using SimpleBlog.Infrastructures;
 using SimpleBlog.Models;
+using SimpleBlog.Services;
 
 namespace SimpleBlog
 {
@@ -46,6 +47,8 @@ namespace SimpleBlog
                 {
                     options.Conventions.Add(new PageRouteTransformerConvention(new SlugifyParameterTransformer()));
                 });
+
+            services.AddScoped<PostService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -72,7 +75,7 @@ namespace SimpleBlog
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller:slugify=Home}/{action:slugify=Index}/{id?}");
+                    template: "{controller:slugify=Index}/{action:slugify=Index}/{id?}");
             });
         }
     }
