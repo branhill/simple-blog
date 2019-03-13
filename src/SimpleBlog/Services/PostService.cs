@@ -25,6 +25,7 @@ namespace SimpleBlog.Services
                 .Include(p => p.TagPosts)
                 .ThenInclude(tp => tp.Tag)
                 .Include(p => p.Comments)
+                .ThenInclude(c => c.RegisteredAuthor)
                 .SingleAsync(predicate);
         }
 
@@ -39,7 +40,7 @@ namespace SimpleBlog.Services
         }
 
         public Task<PaginatedList<Post>> ListBy(Func<IQueryable<Post>, IQueryable<Post>> expression,
-            int pageIndex, int pageSize)
+            int pageIndex, int pageSize = 10)
         {
             var query = expression(_posts.AsNoTracking());
             return PaginatedList<Post>.CreateAsync(query, pageIndex, pageSize);

@@ -1,6 +1,4 @@
-using System;
-
-namespace SimpleBlog.Models
+namespace SimpleBlog.ViewModels
 {
     public class ErrorViewModel
     {
