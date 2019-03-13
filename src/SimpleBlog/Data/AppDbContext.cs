@@ -18,7 +18,9 @@ namespace SimpleBlog.Data
 
         public DbSet<Category> Categories { get; set; }
 
-        public DbSet<CategoryPost> CategoryPosts { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+
+        public DbSet<TagPost> TagPosts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -26,7 +28,8 @@ namespace SimpleBlog.Data
 
             builder.Entity<Post>(ConfigurePost);
             builder.Entity<Category>(ConfigureCategory);
-            builder.Entity<CategoryPost>(ConfigureCategoryPost);
+            builder.Entity<Tag>(ConfigureTag);
+            builder.Entity<TagPost>(ConfigureTagPost);
         }
 
         private static void ConfigurePost(EntityTypeBuilder<Post> builder)
@@ -39,20 +42,19 @@ namespace SimpleBlog.Data
         {
             builder.HasIndex(c => c.Slug)
                 .IsUnique();
-
             builder.HasOne(c => c.Parent)
                 .WithMany(c => c.Subcategories);
         }
 
-        private static void ConfigureCategoryPost(EntityTypeBuilder<CategoryPost> builder)
+        private static void ConfigureTag(EntityTypeBuilder<Tag> builder)
         {
-            builder.HasKey(cp => new { cp.CategoryId, cp.PostId });
-            builder.HasOne(cp => cp.Category)
-                .WithMany(c => c.CategoryPosts)
-                .HasForeignKey(cp => cp.CategoryId);
-            builder.HasOne(cp => cp.Post)
-                .WithMany(p => p.CategoryPosts)
-                .HasForeignKey(cp => cp.PostId);
+            builder.HasIndex(t => t.Slug)
+                .IsUnique();
+        }
+
+        private static void ConfigureTagPost(EntityTypeBuilder<TagPost> builder)
+        {
+            builder.HasKey(tp => new { tp.TagId, tp.PostId });
         }
     }
 }

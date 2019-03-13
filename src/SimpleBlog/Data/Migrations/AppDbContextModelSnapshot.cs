@@ -2,21 +2,22 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SimpleBlog.Data;
 
 namespace SimpleBlog.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20190312142144_AddBasicModels")]
-    partial class AddBasicModels
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854");
+                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128)
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -36,7 +37,8 @@ namespace SimpleBlog.Data.Migrations
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasName("RoleNameIndex");
+                        .HasName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles");
                 });
@@ -44,7 +46,8 @@ namespace SimpleBlog.Data.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("ClaimType");
 
@@ -63,7 +66,8 @@ namespace SimpleBlog.Data.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("ClaimType");
 
@@ -132,11 +136,12 @@ namespace SimpleBlog.Data.Migrations
             modelBuilder.Entity("SimpleBlog.Models.Category", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200);
+                        .HasMaxLength(100);
 
                     b.Property<int?>("ParentId");
 
@@ -154,23 +159,14 @@ namespace SimpleBlog.Data.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("SimpleBlog.Models.CategoryPost", b =>
-                {
-                    b.Property<int>("CategoryId");
-
-                    b.Property<int>("PostId");
-
-                    b.HasKey("CategoryId", "PostId");
-
-                    b.HasIndex("PostId");
-
-                    b.ToTable("CategoryPosts");
-                });
-
             modelBuilder.Entity("SimpleBlog.Models.Comment", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("AuthorEmail")
+                        .IsRequired();
 
                     b.Property<string>("AuthorName")
                         .IsRequired();
@@ -180,8 +176,7 @@ namespace SimpleBlog.Data.Migrations
 
                     b.Property<DateTime>("CreatedTime");
 
-                    b.Property<string>("Email")
-                        .IsRequired();
+                    b.Property<bool>("IsRegistered");
 
                     b.Property<int>("PostId");
 
@@ -199,11 +194,14 @@ namespace SimpleBlog.Data.Migrations
             modelBuilder.Entity("SimpleBlog.Models.Post", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("AuthorId")
                         .IsRequired()
                         .HasMaxLength(450);
+
+                    b.Property<int>("CategoryId");
 
                     b.Property<string>("Content")
                         .IsRequired();
@@ -230,10 +228,47 @@ namespace SimpleBlog.Data.Migrations
 
                     b.HasIndex("AuthorId");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("Slug")
                         .IsUnique();
 
                     b.ToTable("Posts");
+                });
+
+            modelBuilder.Entity("SimpleBlog.Models.Tag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100);
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("SimpleBlog.Models.TagPost", b =>
+                {
+                    b.Property<int>("TagId");
+
+                    b.Property<int>("PostId");
+
+                    b.HasKey("TagId", "PostId");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("TagPosts");
                 });
 
             modelBuilder.Entity("SimpleBlog.Models.User", b =>
@@ -283,7 +318,8 @@ namespace SimpleBlog.Data.Migrations
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasName("UserNameIndex");
+                        .HasName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers");
                 });
@@ -340,19 +376,6 @@ namespace SimpleBlog.Data.Migrations
                         .HasForeignKey("ParentId");
                 });
 
-            modelBuilder.Entity("SimpleBlog.Models.CategoryPost", b =>
-                {
-                    b.HasOne("SimpleBlog.Models.Category", "Category")
-                        .WithMany("CategoryPosts")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("SimpleBlog.Models.Post", "Post")
-                        .WithMany("CategoryPosts")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("SimpleBlog.Models.Comment", b =>
                 {
                     b.HasOne("SimpleBlog.Models.Post", "Post")
@@ -370,6 +393,24 @@ namespace SimpleBlog.Data.Migrations
                     b.HasOne("SimpleBlog.Models.User", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("SimpleBlog.Models.Category", "Category")
+                        .WithMany("Posts")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("SimpleBlog.Models.TagPost", b =>
+                {
+                    b.HasOne("SimpleBlog.Models.Post", "Post")
+                        .WithMany("TagPosts")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("SimpleBlog.Models.Tag", "Tag")
+                        .WithMany("TagPosts")
+                        .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618

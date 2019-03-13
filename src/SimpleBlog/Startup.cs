@@ -26,7 +26,7 @@ namespace SimpleBlog
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlite(
+                options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
             services.AddDefaultIdentity<User>()
                 .AddDefaultUI(UIFramework.Bootstrap4)

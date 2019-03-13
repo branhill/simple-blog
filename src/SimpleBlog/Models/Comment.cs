@@ -10,7 +10,9 @@ namespace SimpleBlog.Models
         public string AuthorName { get; set; }
 
         [Required, EmailAddress]
-        public string Email { get; set; }
+        public string AuthorEmail { get; set; }
+
+        public bool IsRegistered { get; set; }
 
         public string RegisteredAuthorId { get; set; }
 

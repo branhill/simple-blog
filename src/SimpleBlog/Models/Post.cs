@@ -30,7 +30,11 @@ namespace SimpleBlog.Models
         [Required]
         public string Content { get; set; }
 
-        public IList<CategoryPost> CategoryPosts { get; } = new List<CategoryPost>();
+        public int CategoryId { get; set; }
+
+        public Category Category { get; set; }
+
+        public IList<TagPost> TagPosts { get; } = new List<TagPost>();
 
         public IList<Comment> Comments { get; } = new List<Comment>();
     }
