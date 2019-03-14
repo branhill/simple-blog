@@ -21,6 +21,7 @@ namespace SimpleBlog.Services
         public Task<Post> GetBy(Expression<Func<Post, bool>> predicate)
         {
             return _posts.AsNoTracking()
+                .Include(p => p.Author)
                 .Include(p => p.Category)
                 .Include(p => p.TagPosts)
                 .ThenInclude(tp => tp.Tag)

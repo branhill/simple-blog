@@ -1,0 +1,16 @@
+﻿@using System.Web
+@model SimpleBlog.Models.Post
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="card">
+    <div class="card-body">
+        <h1>@Model.Title</h1>
+        <p class="card-text">@Model.Author.UserName</p>
+        <p class="card-text"><small class="text-muted">@Model.CreatedTime</small></p>
+        <div class="card-text">
+            @Html.Raw(HttpUtility.HtmlEncode(Model.Content)?.Replace(Environment.NewLine, "<br/>"))
+        </div>
+    </div>
+</div>
