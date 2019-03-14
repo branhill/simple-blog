@@ -1,6 +1,7 @@
 ﻿using Bogus;
 using Microsoft.AspNetCore.Identity;
 using SimpleBlog.Models;
+using System;
 using System.Linq;
 
 namespace SimpleBlog.Data
@@ -22,7 +23,7 @@ namespace SimpleBlog.Data
             userManager.CreateAsync(admin, "Passw0rd.").Wait();
 
             var categoryFaker = new Faker<Category>()
-                .RuleFor(c => c.Name, f => f.Lorem.Word());
+                .RuleFor(c => c.Name, f => $"{f.Lorem.Word()} {f.Lorem.Word()}");
             var fakeCategories = categoryFaker.Generate(10);
             fakeCategories[1].Parent = fakeCategories[0];
             fakeCategories[2].Parent = fakeCategories[0];
@@ -35,13 +36,15 @@ namespace SimpleBlog.Data
             var commentFaker = new Faker<Comment>()
                 .RuleFor(c => c.AuthorName, f => f.Name.FullName())
                 .RuleFor(c => c.AuthorEmail, f => f.Internet.Email())
-                .RuleFor(c => c.Content, f => f.Lorem.Sentence());
+                .RuleFor(c => c.Content, f => f.Lorem.Paragraph());
             var postFaker = new Faker<Post>()
                 .RuleFor(p => p.Title, f => f.Lorem.Sentence())
                 .RuleFor(p => p.Author, f => admin)
                 .RuleFor(p => p.IsDraft, f => false)
                 .RuleFor(p => p.Excerpt, f => f.Lorem.Paragraph())
-                .RuleFor(p => p.Content, f => f.Lorem.Paragraphs())
+                .RuleFor(p => p.Content, f =>
+                    Enumerable.Range(0, f.Random.Int(10, 50)).Select(_ => f.Lorem.Paragraph())
+                        .Aggregate((sum, next) => sum + Environment.NewLine + next))
                 .RuleFor(p => p.Category, f => fakeCategories[f.Random.Int(0, fakeCategories.Count - 1)])
                 .RuleFor(p => p.TagPosts, f => tagFaker.Generate(3).Select(t => new TagPost { Tag = t }))
                 .RuleFor(t => t.Comments, f => commentFaker.Generate(3));
