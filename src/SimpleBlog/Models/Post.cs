@@ -1,4 +1,5 @@
 ﻿using SimpleBlog.SeedWorks;
+using SimpleBlog.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -7,11 +8,21 @@ namespace SimpleBlog.Models
 {
     public class Post : Entity
     {
+        private string _title;
+
         [Required, StringLength(200)]
-        public string Title { get; set; }
+        public string Title
+        {
+            get => _title;
+            set
+            {
+                _title = value;
+                Slug = value.ToSlug();
+            }
+        }
 
         [Required, StringLength(100)]
-        public string Slug { get; set; }
+        public string Slug { get; private set; }
 
         [Required, StringLength(450)]
         public string AuthorId { get; set; }

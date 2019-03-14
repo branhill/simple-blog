@@ -1,4 +1,5 @@
 ﻿using SimpleBlog.SeedWorks;
+using SimpleBlog.Utilities;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -6,13 +7,23 @@ namespace SimpleBlog.Models
 {
     public class Category : Entity
     {
-        [Required]
-        [StringLength(100)]
-        public string Name { get; set; }
+        private string _name;
 
         [Required]
         [StringLength(100)]
-        public string Slug { get; set; }
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value;
+                Slug = value.ToSlug();
+            }
+        }
+
+        [Required]
+        [StringLength(100)]
+        public string Slug { get; private set; }
 
         public int? ParentId { get; set; }
 
