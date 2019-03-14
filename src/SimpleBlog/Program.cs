@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using SimpleBlog.Data;
+using SimpleBlog.Models;
 
 namespace SimpleBlog
 {
@@ -14,7 +11,21 @@ namespace SimpleBlog
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            var host = CreateWebHostBuilder(args).Build();
+
+            using (var scope = host.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var env = services.GetRequiredService<IHostingEnvironment>();
+                if (env.IsDevelopment())
+                {
+                    var userManager = services.GetRequiredService<UserManager<User>>();
+                    var dbContext = services.GetRequiredService<AppDbContext>();
+                    DataSeeding.Seed(dbContext, userManager);
+                }
+            }
+
+            host.Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>

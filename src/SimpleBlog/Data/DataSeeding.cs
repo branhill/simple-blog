@@ -1,0 +1,53 @@
+﻿using Bogus;
+using Microsoft.AspNetCore.Identity;
+using SimpleBlog.Models;
+using System.Linq;
+
+namespace SimpleBlog.Data
+{
+    public class DataSeeding
+    {
+        public static void Seed(AppDbContext dbContext, UserManager<User> userManager)
+        {
+            dbContext.Database.EnsureCreated();
+
+            if (dbContext.Posts.Any() || userManager.Users.Any())
+                return;
+
+            var admin = new User
+            {
+                UserName = "Admin",
+                Email = "admin@example.com"
+            };
+            userManager.CreateAsync(admin, "Passw0rd.").Wait();
+
+            var categoryFaker = new Faker<Category>()
+                .RuleFor(c => c.Name, f => f.Lorem.Word());
+            var fakeCategories = categoryFaker.Generate(10);
+            fakeCategories[1].Parent = fakeCategories[0];
+            fakeCategories[2].Parent = fakeCategories[0];
+            fakeCategories[3].Parent = fakeCategories[4];
+            dbContext.Categories.AddRange(fakeCategories);
+            dbContext.SaveChanges();
+
+            var tagFaker = new Faker<Tag>()
+                .RuleFor(t => t.Name, f => f.Lorem.Word());
+            var commentFaker = new Faker<Comment>()
+                .RuleFor(c => c.AuthorName, f => f.Name.FullName())
+                .RuleFor(c => c.AuthorEmail, f => f.Internet.Email())
+                .RuleFor(c => c.Content, f => f.Lorem.Sentence());
+            var postFaker = new Faker<Post>()
+                .RuleFor(p => p.Title, f => f.Lorem.Sentence())
+                .RuleFor(p => p.Author, f => admin)
+                .RuleFor(p => p.IsDraft, f => false)
+                .RuleFor(p => p.Excerpt, f => f.Lorem.Paragraph())
+                .RuleFor(p => p.Content, f => f.Lorem.Paragraphs())
+                .RuleFor(p => p.Category, f => fakeCategories[f.Random.Int(0, fakeCategories.Count - 1)])
+                .RuleFor(p => p.TagPosts, f => tagFaker.Generate(3).Select(t => new TagPost { Tag = t }))
+                .RuleFor(t => t.Comments, f => commentFaker.Generate(3));
+            var fakePosts = postFaker.Generate(50);
+            dbContext.Posts.AddRange(fakePosts);
+            dbContext.SaveChanges();
+        }
+    }
+}
