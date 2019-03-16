@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleBlog.Data;
 using SimpleBlog.Models;
@@ -16,8 +17,8 @@ namespace SimpleBlog
             using (var scope = host.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                var env = services.GetRequiredService<IHostingEnvironment>();
-                if (env.IsDevelopment())
+                var config = services.GetRequiredService<IConfiguration>();
+                if (config.GetValue("Development:IsDataSeedingEnabled", false))
                 {
                     var userManager = services.GetRequiredService<UserManager<User>>();
                     var dbContext = services.GetRequiredService<AppDbContext>();
