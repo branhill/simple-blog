@@ -1,4 +1,11 @@
-﻿
-@model IList<Category>
-    
-<partial name="ListPartial" for="@Model" />
+﻿@model IList<Category>
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Categories</h1>
+        <partial name="ListPartial" for="@Model" />
+    </div>
+</div>

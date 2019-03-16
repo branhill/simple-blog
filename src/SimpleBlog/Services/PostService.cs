@@ -54,10 +54,7 @@ namespace SimpleBlog.Services
                 .Include(p => p.Category)
                 .OrderByDescending(p => p.CreatedTime)
                 .AsNoTracking();
-            var list = await PaginatedList<Post>.CreateAsync(query, pageIndex, pageSize);
-
-            Guard.Against.NullOrEmptyThrow404NotFound(list, nameof(list));
-            return list;
+            return await PaginatedList<Post>.CreateAsync(query, pageIndex, pageSize);
         }
     }
 }

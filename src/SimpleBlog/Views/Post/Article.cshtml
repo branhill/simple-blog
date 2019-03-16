@@ -12,5 +12,12 @@
         <div class="card-text">
             @Html.Raw(HttpUtility.HtmlEncode(Model.Content)?.Replace(Environment.NewLine, "<br/>"))
         </div>
+        <div class="mt-4">
+            Tags:
+            @foreach (var tp in Model.TagPosts)
+            {
+                <a class="btn btn-light btn-sm" asp-controller="Tag" asp-action="PostList" asp-route-slug="@tp.Tag.Slug">@Html.DisplayFor(m => tp.Tag.Name)</a>
+            }
+        </div>
     </div>
 </div>

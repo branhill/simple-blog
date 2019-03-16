@@ -1,5 +1,8 @@
 ﻿@inject IOptionsSnapshot<Config> Config
-
+@inject CategoryService CategoryService
+@{
+    var categories = await CategoryService.ListByParent();
+}
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,6 +27,23 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Post" asp-action="Index">Home</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link text-dark dropdown-toggle" data-toggle="dropdown" href="#">Categories</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" asp-area="" asp-controller="Category" asp-action="Index">All Categories</a>
+                            @if (categories.Any())
+                            {
+                                <div class="dropdown-divider"></div>
+                                @foreach (var item in categories)
+                                 {
+                                     <a class="dropdown-item" asp-area="" asp-controller="Category" asp-action="PostList" asp-route-slug="@item.Slug">@Html.DisplayFor(m => item.Name)</a>
+                                 }
+                            }
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Tag" asp-action="Index">Tags</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -40,7 +60,6 @@
         &copy;@DateTime.Now.Year - @Config.Value.SiteName
     </div>
 </footer>
-
 
 <script src="~/lib/jquery/jquery.js"></script>
 <script src="~/lib/bootstrap/js/bootstrap.bundle.js"></script>
