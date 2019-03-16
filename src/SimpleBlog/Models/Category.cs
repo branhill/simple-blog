@@ -29,8 +29,8 @@ namespace SimpleBlog.Models
 
         public Category Parent { get; set; }
 
-        public IList<Category> Subcategories { get; } = new List<Category>();
+        public IList<Category> Subcategories { get; private set; } = new List<Category>();
 
-        public IList<Post> Posts { get; } = new List<Post>();
+        public IList<Post> Posts { get; private set; } = new List<Post>();
     }
 }

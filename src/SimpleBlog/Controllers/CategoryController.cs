@@ -16,11 +16,18 @@ namespace SimpleBlog.Controllers
             _postController = postController;
         }
 
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            return View(await _categoryService.ListByParent());
+        }
+
         [HttpGet("{slug}")]
-        public async Task<IActionResult> Index(string slug, [FromQuery(Name = "p")]int page = 1)
+        public async Task<IActionResult> PostList(string slug, [FromQuery(Name = "p")]int page = 1)
         {
             var category = await _categoryService.GetBySlug(slug);
-            return await _postController.List(p => p.Category.Slug == slug, page, category.Name);
+            return await _postController.List(p => p.CategoryId == category.Id, page, category.Name);
         }
     }
 }

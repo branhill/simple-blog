@@ -21,13 +21,14 @@ namespace SimpleBlog.Services
 
         public async Task<Post> GetBy(Expression<Func<Post, bool>> predicate)
         {
-            var post = await _posts.AsNoTracking()
+            var post = await _posts
                 .Include(p => p.Author)
                 .Include(p => p.Category)
                 .Include(p => p.TagPosts)
-                .ThenInclude(tp => tp.Tag)
+                    .ThenInclude(tp => tp.Tag)
                 .Include(p => p.Comments)
-                .ThenInclude(c => c.RegisteredAuthor)
+                    .ThenInclude(c => c.RegisteredAuthor)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(predicate);
 
             Guard.Against.NullThrow404NotFound(post, nameof(post));
@@ -47,11 +48,12 @@ namespace SimpleBlog.Services
         public async Task<PaginatedList<Post>> ListBy(Expression<Func<Post, bool>> predicate,
             int pageIndex, int pageSize = 10)
         {
-            var query = _posts.AsNoTracking()
+            var query = _posts
                 .Where(predicate)
                 .Include(p => p.Author)
                 .Include(p => p.Category)
-                .OrderByDescending(p => p.CreatedTime);
+                .OrderByDescending(p => p.CreatedTime)
+                .AsNoTracking();
             var list = await PaginatedList<Post>.CreateAsync(query, pageIndex, pageSize);
 
             Guard.Against.NullOrEmptyThrow404NotFound(list, nameof(list));

@@ -44,7 +44,7 @@ namespace SimpleBlog.Controllers
                 title += $"Page {page}";
             }
 
-            return View("List", new PostListViewModel { Title = title, List = list });
+            return View("/Views/Post/List.cshtml", new PostListViewModel { Title = title, List = list });
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
