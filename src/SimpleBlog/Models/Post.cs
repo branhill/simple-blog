@@ -45,8 +45,8 @@ namespace SimpleBlog.Models
 
         public Category Category { get; set; }
 
-        public IList<TagPost> TagPosts { get; } = new List<TagPost>();
+        public IList<TagPost> TagPosts { get; set; } = new List<TagPost>();
 
-        public IList<Comment> Comments { get; } = new List<Comment>();
+        public IList<Comment> Comments { get; set; } = new List<Comment>();
     }
 }

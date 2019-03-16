@@ -25,6 +25,6 @@ namespace SimpleBlog.Models
         [StringLength(100)]
         public string Slug { get; private set; }
 
-        public IList<TagPost> TagPosts { get; } = new List<TagPost>();
+        public IList<TagPost> TagPosts { get; set; } = new List<TagPost>();
     }
 }
