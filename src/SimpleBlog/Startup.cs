@@ -77,7 +77,7 @@ namespace SimpleBlog
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller:slugify=Index}/{action:slugify=Index}/{id?}");
+                    template: "{controller:slugify=Post}/{action:slugify=Index}/{id?}");
             });
         }
     }

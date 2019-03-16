@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace SimpleBlog.Controllers
 {
-    public class IndexController : Controller
+    public class PostController : Controller
     {
         private readonly PostService _postService;
 
-        public IndexController(PostService postService)
+        public PostController(PostService postService)
         {
             _postService = postService;
         }
@@ -24,7 +24,7 @@ namespace SimpleBlog.Controllers
                 .Include(p => p.Author)
                 .OrderByDescending(p => p.CreatedTime), page);
 
-            return View(new IndexViewModel { List = list });
+            return View("List", new PostListViewModel { List = list });
         }
 
         [HttpGet("p/{slug}")]
