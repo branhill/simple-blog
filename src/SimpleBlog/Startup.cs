@@ -11,7 +11,8 @@ using SimpleBlog.Data;
 using SimpleBlog.Infrastructures;
 using SimpleBlog.Infrastructures.Filters;
 using SimpleBlog.Models;
-using SimpleBlog.Services;
+using System.Linq;
+using System.Reflection;
 
 namespace SimpleBlog
 {
@@ -53,8 +54,10 @@ namespace SimpleBlog
 
             services.Configure<Config>(Configuration.GetSection(nameof(Config)));
 
-            services.AddScoped<PostService>();
-            services.AddScoped<CategoryService>();
+            var appServices = Assembly.GetExecutingAssembly().ExportedTypes
+                .Where(t => t.Namespace.EndsWith("Services") && t.Name.EndsWith("Service"));
+            foreach (var appService in appServices)
+                services.AddScoped(appService);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
