@@ -48,6 +48,8 @@ namespace SimpleBlog
                     options.Conventions.Add(new PageRouteTransformerConvention(new SlugifyParameterTransformer()));
                 });
 
+            services.Configure<Config>(Configuration.GetSection(nameof(Config)));
+
             services.AddScoped<PostService>();
         }
 
