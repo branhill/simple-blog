@@ -44,10 +44,14 @@ namespace SimpleBlog.Services
             return GetBy(p => p.Slug == slug);
         }
 
-        public async Task<PaginatedList<Post>> ListBy(Func<IQueryable<Post>, IQueryable<Post>> expression,
+        public async Task<PaginatedList<Post>> ListBy(Expression<Func<Post, bool>> predicate,
             int pageIndex, int pageSize = 10)
         {
-            var query = expression(_posts.AsNoTracking());
+            var query = _posts.AsNoTracking()
+                .Where(predicate)
+                .Include(p => p.Author)
+                .Include(p => p.Category)
+                .OrderByDescending(p => p.CreatedTime);
             var list = await PaginatedList<Post>.CreateAsync(query, pageIndex, pageSize);
 
             Guard.Against.NullOrEmptyThrow404NotFound(list, nameof(list));

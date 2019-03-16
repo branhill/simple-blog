@@ -48,11 +48,13 @@ namespace SimpleBlog
                 .AddRazorPagesOptions(options =>
                 {
                     options.Conventions.Add(new PageRouteTransformerConvention(new SlugifyParameterTransformer()));
-                });
+                })
+                .AddControllersAsServices();
 
             services.Configure<Config>(Configuration.GetSection(nameof(Config)));
 
             services.AddScoped<PostService>();
+            services.AddScoped<CategoryService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
