@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SimpleBlog.Data;
+using SimpleBlog.Infrastructures.GuardClauses;
 using SimpleBlog.Models;
 using SimpleBlog.SeedWorks;
 using System;
@@ -18,16 +19,19 @@ namespace SimpleBlog.Services
             _posts = dbContext.Posts;
         }
 
-        public Task<Post> GetBy(Expression<Func<Post, bool>> predicate)
+        public async Task<Post> GetBy(Expression<Func<Post, bool>> predicate)
         {
-            return _posts.AsNoTracking()
+            var post = await _posts.AsNoTracking()
                 .Include(p => p.Author)
                 .Include(p => p.Category)
                 .Include(p => p.TagPosts)
                 .ThenInclude(tp => tp.Tag)
                 .Include(p => p.Comments)
                 .ThenInclude(c => c.RegisteredAuthor)
-                .SingleAsync(predicate);
+                .FirstOrDefaultAsync(predicate);
+
+            Guard.Against.NullThrow404NotFound(post, nameof(post));
+            return post;
         }
 
         public Task<Post> GetById(int id)
@@ -40,11 +44,14 @@ namespace SimpleBlog.Services
             return GetBy(p => p.Slug == slug);
         }
 
-        public Task<PaginatedList<Post>> ListBy(Func<IQueryable<Post>, IQueryable<Post>> expression,
+        public async Task<PaginatedList<Post>> ListBy(Func<IQueryable<Post>, IQueryable<Post>> expression,
             int pageIndex, int pageSize = 10)
         {
             var query = expression(_posts.AsNoTracking());
-            return PaginatedList<Post>.CreateAsync(query, pageIndex, pageSize);
+            var list = await PaginatedList<Post>.CreateAsync(query, pageIndex, pageSize);
+
+            Guard.Against.NullOrEmptyThrow404NotFound(list, nameof(list));
+            return list;
         }
     }
 }
