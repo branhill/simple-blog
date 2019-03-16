@@ -52,6 +52,8 @@ namespace SimpleBlog
                 })
                 .AddControllersAsServices();
 
+            services.AddMemoryCache();
+
             services.Configure<Config>(Configuration.GetSection(nameof(Config)));
 
             var appServices = Assembly.GetExecutingAssembly().ExportedTypes
