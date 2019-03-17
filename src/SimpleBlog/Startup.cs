@@ -57,7 +57,7 @@ namespace SimpleBlog
             services.Configure<Config>(Configuration.GetSection(nameof(Config)));
 
             var appServices = Assembly.GetExecutingAssembly().ExportedTypes
-                .Where(t => t.Namespace.EndsWith("Services") && t.Name.EndsWith("Service"));
+                .Where(t => t.Namespace.EndsWith(".Services") && t.Name.EndsWith("Service"));
             foreach (var appService in appServices)
                 services.AddScoped(appService);
         }
@@ -69,6 +69,7 @@ namespace SimpleBlog
             {
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
+                app.UseBrowserLink();
             }
             else
             {
