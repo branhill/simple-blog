@@ -9,6 +9,9 @@ namespace SimpleBlog.Utilities
     {
         public static string ToSlug(this string input, int maxLength = 72)
         {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
+
             var str = input.RemoveDiacritics().ToLowerInvariant();
             str = Regex.Replace(str, @"[^a-z0-9\s-]", "");
             str = Regex.Replace(str, @"\s+", " ").Trim();

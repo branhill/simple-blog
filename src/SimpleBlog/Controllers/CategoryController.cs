@@ -20,7 +20,7 @@ namespace SimpleBlog.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return View(await _categoryService.ListByParent());
+            return View(await _categoryService.List());
         }
 
         [HttpGet("{slug}")]

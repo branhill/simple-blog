@@ -1,4 +1,4 @@
-﻿@using System.Web
+﻿@inject SignInManager<User> SignInManager
 @model SimpleBlog.Models.Post
 @{
     ViewData["Title"] = Model.Title;
@@ -8,9 +8,18 @@
     <div class="card-body">
         <h1>@Model.Title</h1>
         <p class="card-text">@Model.Author.UserName</p>
-        <p class="card-text"><small class="text-muted">@Model.CreatedTime</small></p>
+        <div class="d-flex justify-content-between">
+            <p class="card-text"><small class="text-muted">@Model.CreatedTime</small></p>
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <div>
+                    <a class="btn btn-secondary btn-sm" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+                    <a class="btn btn-secondary btn-sm">Delete</a>
+                </div>
+            }
+        </div>
         <div class="card-text">
-            @Html.Raw(HttpUtility.HtmlEncode(Model.Content)?.Replace(Environment.NewLine, "<br/>"))
+            @Html.Raw(Model.Content)
         </div>
         <div class="mt-4">
             Tags:
@@ -19,5 +28,25 @@
                 <a class="btn btn-light btn-sm" asp-controller="Tag" asp-action="PostList" asp-route-slug="@tp.Tag.Slug">@Html.DisplayFor(m => tp.Tag.Name)</a>
             }
         </div>
+    </div>
+</div>
+<div class="card mt-4">
+    <div class="card-body">
+        <h3 class="card-title">Comments</h3>
+        @if (!Model.Comments.Any())
+        {
+            <small class="card-text">Be the first to comment.</small>
+        }
+        @for (var i = 0; i < Model.Comments.Count; i++)
+        {
+            <div>
+                <p>@Model.Comments[i].AuthorName</p>
+                <p>@Model.Comments[i].Content</p>
+                @if (i < Model.Comments.Count - 1)
+                {
+                    <hr/>
+                }
+            </div>
+        }
     </div>
 </div>

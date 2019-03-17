@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
@@ -53,6 +54,7 @@ namespace SimpleBlog
                 .AddControllersAsServices();
 
             services.AddMemoryCache();
+            services.AddAutoMapper();
 
             services.Configure<Config>(Configuration.GetSection(nameof(Config)));
 

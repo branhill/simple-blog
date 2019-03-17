@@ -19,7 +19,6 @@ namespace SimpleBlog.Services
         public async Task<Tag> GetBySlug(string slug)
         {
             var tag = await _tags
-                .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.Slug == slug);
 
             Guard.Against.NullThrow404NotFound(tag, nameof(tag));

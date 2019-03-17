@@ -1,8 +1,10 @@
 ﻿@inject IOptionsSnapshot<Config> Config
 @inject CategoryService CategoryService
+@inject SignInManager<User> SignInManager
 @{
-    var categories = await CategoryService.ListByParent();
+    var categories = await CategoryService.List();
 }
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -30,7 +32,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link text-dark dropdown-toggle" data-toggle="dropdown" href="#">Categories</a>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item" asp-area="" asp-controller="Category" asp-action="Index">All Categories</a>
+                            <a class="dropdown-item" asp-area="" asp-controller="Category" asp-action="Index">All categories</a>
                             @if (categories.Any())
                             {
                                 <div class="dropdown-divider"></div>
@@ -44,6 +46,12 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Tag" asp-action="Index">Tags</a>
                     </li>
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Post" asp-action="New">New post</a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>

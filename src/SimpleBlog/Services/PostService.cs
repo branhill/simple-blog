@@ -12,10 +12,12 @@ namespace SimpleBlog.Services
 {
     public class PostService
     {
+        private readonly AppDbContext _dbContext;
         private readonly DbSet<Post> _posts;
 
         public PostService(AppDbContext dbContext)
         {
+            _dbContext = dbContext;
             _posts = dbContext.Posts;
         }
 
@@ -28,22 +30,17 @@ namespace SimpleBlog.Services
                     .ThenInclude(tp => tp.Tag)
                 .Include(p => p.Comments)
                     .ThenInclude(c => c.RegisteredAuthor)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(predicate);
 
             Guard.Against.NullThrow404NotFound(post, nameof(post));
             return post;
         }
 
-        public Task<Post> GetById(int id)
-        {
-            return GetBy(p => p.Id == id);
-        }
+        public Task<Post> GetById(int id) =>
+            GetBy(p => p.Id == id);
 
-        public Task<Post> GetBySlug(string slug)
-        {
-            return GetBy(p => p.Slug == slug);
-        }
+        public Task<Post> GetBySlug(string slug) =>
+            GetBy(p => p.Slug == slug);
 
         public async Task<PaginatedList<Post>> ListBy(Expression<Func<Post, bool>> predicate,
             int pageIndex, int pageSize = 10)
@@ -52,9 +49,30 @@ namespace SimpleBlog.Services
                 .Where(predicate)
                 .Include(p => p.Author)
                 .Include(p => p.Category)
-                .OrderByDescending(p => p.CreatedTime)
-                .AsNoTracking();
+                .OrderByDescending(p => p.CreatedTime);
             return await PaginatedList<Post>.CreateAsync(query, pageIndex, pageSize);
+        }
+
+        public async Task<Post> Create(Post entity)
+        {
+            await _posts.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
+
+            return entity;
+        }
+
+        public async Task<Post> Update(Post entity)
+        {
+            _posts.Update(entity);
+            await _dbContext.SaveChangesAsync();
+
+            return entity;
+        }
+
+        public async Task Delete(Post entity)
+        {
+            _posts.Remove(entity);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

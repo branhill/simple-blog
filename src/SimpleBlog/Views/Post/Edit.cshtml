@@ -1,0 +1,70 @@
+﻿@using Microsoft.AspNetCore.Routing
+@model PostInputModel
+@inject CategoryService CategoryService
+@inject TagService TagService
+@{
+    ViewBag.Categories = (await CategoryService.List(true))
+        .Select(c => new SelectListItem(c.Name, c.Id.ToString()))
+        .ToList();
+    ViewBag.Tags = await TagService.List();
+}
+
+<div class="card">
+    <form asp-action="CreateOrUpdate" asp-route-id="@(Model.Id != 0 ? Model.Id : (object) null)" asp-a class="m-3">
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+        <div class="form-group">
+            <label asp-for="Title"></label>
+            <input asp-for="Title" class="form-control"/>
+            <span asp-validation-for="Title" class="form-text text-danger"></span>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col">
+                <label asp-for="CategoryId"></label>
+                <select asp-for="CategoryId" asp-items="@ViewBag.Categories" class="custom-select"></select>
+                <span asp-validation-for="CategoryId" class="form-text text-danger"></span>
+            </div>
+
+            <div class="form-group col">
+                <label asp-for="Tags"></label>
+                <input asp-for="Tags" class="form-control"/>
+                <span asp-validation-for="Tags" class="form-text text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Excerpt"></label>
+            <textarea asp-for="Excerpt" class="form-control"></textarea>
+            <span asp-validation-for="Excerpt" class="form-text text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Content"></label>
+            <textarea asp-for="Content" class="form-control"></textarea>
+            <span asp-validation-for="Content" class="form-text text-danger"></span>
+        </div>
+
+        <div class="mt-5 d-flex justify-content-between align-items-baseline">
+            <div class="d-inline-flex align-items-baseline">
+                <div class="custom-control custom-switch">
+                    <input asp-for="IsDraft" type="checkbox" class="custom-control-input">
+                    <label asp-for="IsDraft" class="custom-control-label"></label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary px-4">Publish</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/lib/tinymce/tinymce.min.js"></script>
+
+    <script>
+        tinymce.init({
+            selector: '@($"#{nameof(Model.Content)}")',
+            height: 480
+        });
+    </script>
+}

@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using SimpleBlog.Models;
 using SimpleBlog.Services;
 using SimpleBlog.ViewModels;
 using System;
 using System.Diagnostics;
-using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SimpleBlog.Controllers
@@ -13,10 +16,23 @@ namespace SimpleBlog.Controllers
     public class PostController : Controller
     {
         private readonly PostService _postService;
+        private readonly TagService _tagService;
+        private readonly IMapper _mapper;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public PostController(PostService postService)
+        public PostController(
+            PostService postService,
+            TagService tagService,
+            IMapper mapper,
+            UserManager<User> userManager,
+            SignInManager<User> signInManager)
         {
             _postService = postService;
+            _tagService = tagService;
+            _mapper = mapper;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         [HttpGet("/")]
@@ -29,13 +45,94 @@ namespace SimpleBlog.Controllers
         public async Task<IActionResult> Article(string slug)
         {
             var post = await _postService.GetBySlug(slug);
+
+            if (post.IsDraft)
+                return RedirectToAction(nameof(Edit), new { post.Id });
             return View(post);
         }
 
-        [NonAction]
-        public async Task<IActionResult> List(Expression<Func<Post, bool>> predicate, int page, string title)
+        [Authorize]
+        [HttpGet("[action]")]
+        public IActionResult New()
         {
-            var list = await _postService.ListBy(predicate, page);
+            var model = new PostInputModel
+            {
+                IsDraft = true
+            };
+
+            return View("Edit", model);
+        }
+
+        [Authorize]
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var post = await _postService.GetById(id);
+
+            return View(_mapper.Map<PostInputModel>(post));
+        }
+
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [HttpPost("new")]
+        [HttpPost("edit/{id}")]
+        public async Task<IActionResult> CreateOrUpdate(PostInputModel model, int? id)
+        {
+            if (!ModelState.IsValid)
+                return View("Edit", model);
+
+            Post post;
+            var tagList = await _tagService.List();
+            if (id == null)
+            {
+                post = _mapper.Map<Post>(model);
+                post.AuthorId = _userManager.GetUserId(User);
+                post.TagPosts = model.GetTagPosts(tagList);
+                if (string.IsNullOrWhiteSpace(post.Excerpt))
+                {
+                    var lineBreak = post.Content.IndexOf(Environment.NewLine, StringComparison.Ordinal);
+                    if (lineBreak < 0)
+                        lineBreak = post.Content.Length;
+                    var length = Math.Min(lineBreak, 500);
+                    var sub = post.Content.Substring(0, length);
+                    post.Excerpt = Regex.Replace(sub, "<[^>]*(>|$)", "");
+                }
+
+                await _postService.Create(post);
+            }
+            else
+            {
+                post = await _postService.GetById(id.Value);
+                post.TagPosts = model.GetTagPosts(tagList);
+                post.ModifiedTime = DateTime.UtcNow;
+                _mapper.Map(model, post);
+
+                await _postService.Update(post);
+            }
+
+            return RedirectToAction(nameof(Article), new { post.Slug });
+        }
+
+        [Authorize]
+        [HttpPost("[action]/{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var post = await _postService.GetById(id);
+            await _postService.Delete(post);
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [NonAction]
+        public async Task<IActionResult> List(Func<Post, bool> predicate, int page, string title)
+        {
+            if (!_signInManager.IsSignedIn(User))
+            {
+                var oldPredicate = predicate;
+                predicate = p => p.IsDraft == false && oldPredicate(p);
+            }
+
+            var list = await _postService.ListBy(p => predicate(p), page);
 
             if (page > 1)
             {

@@ -11,6 +11,7 @@ namespace SimpleBlog.Models
 
         [Required]
         [StringLength(100)]
+        [RegularExpression("^[^,]*$", ErrorMessage = "Comma is not allowed")]
         public string Name
         {
             get => _name;
