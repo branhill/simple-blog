@@ -52,10 +52,17 @@
                     <label asp-for="IsDraft" class="custom-control-label"></label>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary px-4">Publish</button>
+            <div class="d-inline-flex align-items-baseline">
+                @if (Model.Id != 0)
+                {
+                    <button type="button" class="btn btn-danger btn-sm mr-3" data-toggle="modal" data-target="#deleteModal">Delete</button>
+                }
+                <button id="submit" type="submit" class="btn btn-primary px-4">@(Model.IsDraft ? "Save" : "Publish")</button>
+            </div>
         </div>
     </form>
 </div>
+<partial name="_DeleteModalPartial" for="@Model" />
 
 @section Scripts{
     <partial name="_ValidationScriptsPartial" />
@@ -66,5 +73,9 @@
             selector: '@($"#{nameof(Model.Content)}")',
             height: 480
         });
+
+        $('@($"#{nameof(Model.IsDraft)}")').on('change', function() {
+                $('#submit').text(this.checked ? 'Save' : 'Publish');
+            });
     </script>
 }

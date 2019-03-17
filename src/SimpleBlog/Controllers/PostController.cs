@@ -85,6 +85,7 @@ namespace SimpleBlog.Controllers
             var tagList = await _tagService.List();
             if (id == null)
             {
+                // Create
                 post = _mapper.Map<Post>(model);
                 post.AuthorId = _userManager.GetUserId(User);
                 post.TagPosts = model.GetTagPosts(tagList);
@@ -102,10 +103,20 @@ namespace SimpleBlog.Controllers
             }
             else
             {
+                // Update
                 post = await _postService.GetById(id.Value);
-                post.TagPosts = model.GetTagPosts(tagList);
-                post.ModifiedTime = DateTime.UtcNow;
+                if (post.IsDraft)
+                {
+                    post.CreatedTime = DateTime.UtcNow;
+                    post.ModifiedTime = null;
+                }
+                else
+                {
+                    post.ModifiedTime = DateTime.UtcNow;
+                }
+
                 _mapper.Map(model, post);
+                post.TagPosts = model.GetTagPosts(tagList);
 
                 await _postService.Update(post);
             }
@@ -114,6 +125,7 @@ namespace SimpleBlog.Controllers
         }
 
         [Authorize]
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]/{id}")]
         public async Task<IActionResult> Delete(int id)
         {

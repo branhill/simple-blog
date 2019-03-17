@@ -8,7 +8,13 @@
     <div class="card mt-3">
         <div class="card-body">
             <a asp-controller="Post" asp-action="Article" asp-route-slug="@item.Slug">
-                <h5 class="card-title">@Html.DisplayFor(m => item.Title)</h5>
+                <h5 class="card-title">
+                    @Html.DisplayFor(m => item.Title)
+                    @if (item.IsDraft)
+                    {
+                        <span class="badge badge-secondary">Draft</span>
+                    }
+                </h5>
             </a>
             <p class="card-text">
                 <a class="btn btn-light btn-sm" asp-controller="Category" asp-action="PostList" asp-route-slug="@item.Category.Slug">@Html.DisplayFor(m => item.Category.Name)</a>

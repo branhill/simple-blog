@@ -7,17 +7,25 @@
 <div class="card">
     <div class="card-body">
         <h1>@Model.Title</h1>
-        <p class="card-text">@Model.Author.UserName</p>
         <div class="d-flex justify-content-between">
-            <p class="card-text"><small class="text-muted">@Model.CreatedTime</small></p>
+            <p class="card-text">@Model.Author.UserName</p>
             @if (SignInManager.IsSignedIn(User))
             {
                 <div>
-                    <a class="btn btn-secondary btn-sm" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
-                    <a class="btn btn-secondary btn-sm">Delete</a>
+                    <button id="delete" class="btn btn-danger btn-sm" type="button" data-toggle="modal" data-target="#deleteModal">Delete</button>
+                    <a class="btn btn-primary btn-sm ml-2" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
                 </div>
             }
         </div>
+        <p class="card-text">
+            <small class="text-muted">
+                <time datetime="@Model.CreatedTime.ToString("u")">@Html.DisplayFor(m => m.CreatedTime)</time>
+                @if (@Model.ModifiedTime != null)
+                {
+                    <time datetime="@(Model.ModifiedTime.Value.ToString("u"))"> - (Modified at @Html.DisplayFor(m => m.ModifiedTime))</time>
+                }
+            </small>
+        </p>
         <div class="card-text">
             @Html.Raw(Model.Content)
         </div>
@@ -40,8 +48,8 @@
         @for (var i = 0; i < Model.Comments.Count; i++)
         {
             <div>
-                <p>@Model.Comments[i].AuthorName</p>
-                <p>@Model.Comments[i].Content</p>
+                <p>@Html.DisplayFor(m => m.Comments[i].AuthorName)</p>
+                <p>@Html.DisplayFor(m => m.Comments[i].Content)</p>
                 @if (i < Model.Comments.Count - 1)
                 {
                     <hr/>
@@ -50,3 +58,8 @@
         }
     </div>
 </div>
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <partial name="_DeleteModalPartial" for="@Model" />
+}
