@@ -14,11 +14,13 @@ namespace SimpleBlog.Services
     {
         private readonly AppDbContext _dbContext;
         private readonly DbSet<Post> _posts;
+        private readonly DbSet<Comment> _comments;
 
         public PostService(AppDbContext dbContext)
         {
             _dbContext = dbContext;
             _posts = dbContext.Posts;
+            _comments = dbContext.Comments;
         }
 
         public async Task<Post> GetBy(Expression<Func<Post, bool>> predicate)

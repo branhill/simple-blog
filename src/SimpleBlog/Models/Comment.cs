@@ -1,5 +1,6 @@
 ﻿using SimpleBlog.SeedWorks;
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace SimpleBlog.Models
@@ -7,9 +8,11 @@ namespace SimpleBlog.Models
     public class Comment : Entity
     {
         [Required]
+        [DisplayName("Name")]
         public string AuthorName { get; set; }
 
         [Required, EmailAddress]
+        [DisplayName("Email")]
         public string AuthorEmail { get; set; }
 
         public bool IsRegistered { get; set; }
@@ -25,6 +28,7 @@ namespace SimpleBlog.Models
         public DateTime CreatedTime { get; set; } = DateTime.UtcNow;
 
         [Required]
+        [DisplayName("Comment")]
         public string Content { get; set; }
     }
 }

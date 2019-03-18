@@ -19,20 +19,17 @@ namespace SimpleBlog.Controllers
         private readonly TagService _tagService;
         private readonly IMapper _mapper;
         private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
 
         public PostController(
             PostService postService,
             TagService tagService,
             IMapper mapper,
-            UserManager<User> userManager,
-            SignInManager<User> signInManager)
+            UserManager<User> userManager)
         {
             _postService = postService;
             _tagService = tagService;
             _mapper = mapper;
             _userManager = userManager;
-            _signInManager = signInManager;
         }
 
         [HttpGet("/")]
@@ -45,10 +42,11 @@ namespace SimpleBlog.Controllers
         public async Task<IActionResult> Article(string slug)
         {
             var post = await _postService.GetBySlug(slug);
+            var viewModel = new PostViewModel { Post = post };
 
             if (post.IsDraft)
                 return RedirectToAction(nameof(Edit), new { post.Id });
-            return View(post);
+            return View(viewModel);
         }
 
         [Authorize]
@@ -138,7 +136,7 @@ namespace SimpleBlog.Controllers
         [NonAction]
         public async Task<IActionResult> List(Func<Post, bool> predicate, int page, string title)
         {
-            if (!_signInManager.IsSignedIn(User))
+            if (!User.Identity.IsAuthenticated)
             {
                 var oldPredicate = predicate;
                 predicate = p => p.IsDraft == false && oldPredicate(p);
@@ -154,6 +152,38 @@ namespace SimpleBlog.Controllers
             }
 
             return View("/Views/Post/List.cshtml", new PostListViewModel { Title = title, List = list });
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost("{slug}/comment")]
+        public async Task<IActionResult> CreateComment(string slug, PostViewModel viewModel)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                ModelState.Remove($"{nameof(PostViewModel.Comment)}.{nameof(PostViewModel.Comment.AuthorName)}");
+                ModelState.Remove($"{nameof(PostViewModel.Comment)}.{nameof(PostViewModel.Comment.AuthorEmail)}");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                viewModel.Post = await _postService.GetBySlug(slug);
+                return View("Article", viewModel);
+            }
+
+            var comment = viewModel.Comment;
+            var post = await _postService.GetBySlug(slug);
+            if (User.Identity.IsAuthenticated)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                comment.RegisteredAuthor = user;
+                comment.AuthorName = !string.IsNullOrEmpty(user.Name) ? user.Name : user.UserName;
+                comment.AuthorEmail = user.Email;
+            }
+
+            post.Comments.Add(comment);
+            await _postService.Update(post);
+
+            return RedirectToAction(nameof(Article), new { slug });
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

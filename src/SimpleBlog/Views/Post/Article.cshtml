@@ -1,37 +1,36 @@
-﻿@inject SignInManager<User> SignInManager
-@model SimpleBlog.Models.Post
+﻿@model PostViewModel
 @{
-    ViewData["Title"] = Model.Title;
+    ViewData["Title"] = Model.Post.Title;
 }
 
 <div class="card">
     <div class="card-body">
-        <h1>@Model.Title</h1>
+        <h1>@Model.Post.Title</h1>
         <div class="d-flex justify-content-between">
-            <p class="card-text">@Model.Author.UserName</p>
-            @if (SignInManager.IsSignedIn(User))
+            <p class="card-text">@Model.Post.Author.UserName</p>
+            @if (User.Identity.IsAuthenticated)
             {
                 <div>
                     <button id="delete" class="btn btn-danger btn-sm" type="button" data-toggle="modal" data-target="#deleteModal">Delete</button>
-                    <a class="btn btn-primary btn-sm ml-2" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+                    <a class="btn btn-primary btn-sm ml-2" asp-action="Edit" asp-route-id="@Model.Post.Id">Edit</a>
                 </div>
             }
         </div>
         <p class="card-text">
             <small class="text-muted">
-                <time datetime="@Model.CreatedTime.ToString("u")">@Html.DisplayFor(m => m.CreatedTime)</time>
-                @if (@Model.ModifiedTime != null)
+                <time datetime="@Model.Post.CreatedTime.ToString("u")">@Html.DisplayFor(m => m.Post.CreatedTime)</time>
+                @if (@Model.Post.ModifiedTime != null)
                 {
-                    <time datetime="@(Model.ModifiedTime.Value.ToString("u"))"> - (Modified at @Html.DisplayFor(m => m.ModifiedTime))</time>
+                    <time datetime="@(Model.Post.ModifiedTime.Value.ToString("u"))"> - (Modified at @Html.DisplayFor(m => m.Post.ModifiedTime))</time>
                 }
             </small>
         </p>
         <div class="card-text">
-            @Html.Raw(Model.Content)
+            @Html.Raw(Model.Post.Content)
         </div>
         <div class="mt-4">
             Tags:
-            @foreach (var tp in Model.TagPosts)
+            @foreach (var tp in Model.Post.TagPosts)
             {
                 <a class="btn btn-light btn-sm" asp-controller="Tag" asp-action="PostList" asp-route-slug="@tp.Tag.Slug">@Html.DisplayFor(m => tp.Tag.Name)</a>
             }
@@ -41,16 +40,46 @@
 <div class="card mt-4">
     <div class="card-body">
         <h3 class="card-title">Comments</h3>
-        @if (!Model.Comments.Any())
+        <form asp-action="CreateComment" asp-route-slug="@Model.Post.Slug">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <p>You will post comment as <b>@User.Identity.Name</b>.</p>
+            }
+            else
+            {
+                <div class="form-group col-md-4 col-sm-12 px-0">
+                    <label asp-for="Comment.AuthorName"></label>
+                    <input asp-for="Comment.AuthorName" class="form-control"/>
+                    <span asp-validation-for="Comment.AuthorName" class="form-text text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-4 col-sm-12 px-0">
+                    <label asp-for="Comment.AuthorEmail"></label>
+                    <input asp-for="Comment.AuthorEmail" class="form-control"/>
+                    <span asp-validation-for="Comment.AuthorEmail" class="form-text text-danger"></span>
+                </div>
+            }
+            <div class="form-group">
+                <label asp-for="Comment.Content"></label>
+                <textarea asp-for="Comment.Content" class="form-control"></textarea>
+                <span asp-validation-for="Comment.Content" class="form-text text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary">Post</button>
+        </form>
+        <hr/>
+        @if (!Model.Post.Comments.Any())
         {
             <small class="card-text">Be the first to comment.</small>
         }
-        @for (var i = 0; i < Model.Comments.Count; i++)
+        @for (var i = 0; i < Model.Post.Comments.Count; i++)
         {
             <div>
-                <p>@Html.DisplayFor(m => m.Comments[i].AuthorName)</p>
-                <p>@Html.DisplayFor(m => m.Comments[i].Content)</p>
-                @if (i < Model.Comments.Count - 1)
+                <p>
+                    <b>@Html.DisplayFor(m => m.Post.Comments[i].AuthorName)</b>
+                    - <small><time datetime="@Model.Post.Comments[i].CreatedTime.ToString("u")">@Html.DisplayFor(m => m.Post.Comments[i].CreatedTime)</time></small>
+                </p>
+                <p>@Html.DisplayFor(m => m.Post.Comments[i].Content)</p>
+                @if (i < Model.Post.Comments.Count - 1)
                 {
                     <hr/>
                 }
@@ -59,7 +88,7 @@
     </div>
 </div>
 
-@if (SignInManager.IsSignedIn(User))
+@if (User.Identity.IsAuthenticated)
 {
-    <partial name="_DeleteModalPartial" for="@Model" />
+    <partial name="_DeleteModalPartial" model="@Model.Post" />
 }
