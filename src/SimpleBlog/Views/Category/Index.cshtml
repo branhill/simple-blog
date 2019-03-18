@@ -1,11 +1,54 @@
-﻿@model IList<Category>
+﻿@model CategoryListViewModel
 @{
     ViewData["Title"] = "Categories";
+    ViewBag.CategoriesSelect = Model.Categories
+        .Select(c => new SelectListItem(c.Name, c.Id.ToString()))
+        .ToList();
 }
 
 <div class="card">
     <div class="card-body">
         <h1 class="card-title">Categories</h1>
-        <partial name="_ListPartial" for="@Model" />
+        @if (User.Identity.IsAuthenticated)
+        {
+            <button id="delete" class="btn btn-primary btn mb-3" type="button" data-toggle="modal" data-target="#createModal">New</button>
+        }
+        <partial name="_ListPartial" model="@Model.Categories"/>
     </div>
 </div>
+
+@if (User.Identity.IsAuthenticated)
+{
+    <div id="createModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Category</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form asp-action="CreateOrUpdate">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label asp-for="Category.Name"></label>
+                            <input asp-for="Category.Name" class="form-control" />
+                            <span asp-validation-for="Category.Name" class="form-text text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Category.ParentId"></label>
+                            <select asp-for="Category.ParentId" asp-items="@ViewBag.CategoriesSelect" class="custom-select">
+                                <option value="">No parent (Root category)</option>
+                            </select>
+                            <span asp-validation-for="Category.ParentId" class="form-text text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

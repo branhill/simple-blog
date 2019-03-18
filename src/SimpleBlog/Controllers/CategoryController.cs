@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SimpleBlog.Services;
+using SimpleBlog.ViewModels;
 using System.Threading.Tasks;
 
 namespace SimpleBlog.Controllers
@@ -16,11 +18,11 @@ namespace SimpleBlog.Controllers
             _postController = postController;
         }
 
-
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return View(await _categoryService.List());
+            var categories = await _categoryService.List();
+            return View(new CategoryListViewModel { Categories = categories });
         }
 
         [HttpGet("{slug}")]
@@ -28,6 +30,31 @@ namespace SimpleBlog.Controllers
         {
             var category = await _categoryService.GetBySlug(slug);
             return await _postController.List(p => p.CategoryId == category.Id, page, category.Name);
+        }
+
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [HttpPost("new")]
+        [HttpPost("edit/{id}")]
+        public async Task<IActionResult> CreateOrUpdate(CategoryListViewModel viewModel, int? id)
+        {
+            if (!ModelState.IsValid)
+            {
+                viewModel.Categories = await _categoryService.List();
+                return View("Index", viewModel);
+            }
+
+            var category = viewModel.Category;
+            if (id == null)
+            {
+                await _categoryService.Create(category);
+            }
+            else
+            {
+                await _categoryService.Update(category);
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

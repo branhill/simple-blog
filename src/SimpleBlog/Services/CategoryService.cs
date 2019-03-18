@@ -15,12 +15,14 @@ namespace SimpleBlog.Services
     {
         private static readonly HashSet<string> CacheKeys = new HashSet<string>();
 
+        private readonly AppDbContext _dbContext;
         private readonly DbSet<Category> _categories;
         private readonly IMemoryCache _memoryCache;
 
         public CategoryService(AppDbContext dbContext, IMemoryCache memoryCache)
         {
             _categories = dbContext.Categories;
+            _dbContext = dbContext;
             _memoryCache = memoryCache;
         }
 
@@ -50,6 +52,31 @@ namespace SimpleBlog.Services
                     ? list
                     : list.Where(c => c.ParentId == null).ToList();
             });
+        }
+
+        public async Task<Category> Create(Category entity)
+        {
+            await _categories.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
+
+            EvictAllCache();
+            return entity;
+        }
+
+        public async Task<Category> Update(Category entity)
+        {
+            _categories.Update(entity);
+            await _dbContext.SaveChangesAsync();
+
+            EvictAllCache();
+            return entity;
+        }
+
+        public async Task Delete(Category entity)
+        {
+            _categories.Remove(entity);
+            await _dbContext.SaveChangesAsync();
+            EvictAllCache();
         }
 
         public void EvictAllCache()
