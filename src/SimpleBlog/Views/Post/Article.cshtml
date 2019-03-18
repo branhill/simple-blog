@@ -19,7 +19,7 @@
         <p class="card-text">
             <small class="text-muted">
                 <time datetime="@Model.Post.CreatedTime.ToString("u")">@Html.DisplayFor(m => m.Post.CreatedTime)</time>
-                @if (@Model.Post.ModifiedTime != null)
+                @if (Model.Post.ModifiedTime != null)
                 {
                     <time datetime="@(Model.Post.ModifiedTime.Value.ToString("u"))"> - (Modified at @Html.DisplayFor(m => m.Post.ModifiedTime))</time>
                 }
@@ -74,10 +74,16 @@
         @for (var i = 0; i < Model.Post.Comments.Count; i++)
         {
             <div>
+            <div class="d-flex justify-content-between align-items-baseline">
                 <p>
                     <b>@Html.DisplayFor(m => m.Post.Comments[i].AuthorName)</b>
                     - <small><time datetime="@Model.Post.Comments[i].CreatedTime.ToString("u")">@Html.DisplayFor(m => m.Post.Comments[i].CreatedTime)</time></small>
                 </p>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <button id="delete" class="btn btn-danger btn-sm" type="button" data-toggle="modal" data-target="#deleteCommentModal" data-id="@Model.Post.Comments[i].Id">Delete</button>
+                }
+            </div>
                 <p>@Html.DisplayFor(m => m.Post.Comments[i].Content)</p>
                 @if (i < Model.Post.Comments.Count - 1)
                 {
@@ -90,5 +96,40 @@
 
 @if (User.Identity.IsAuthenticated)
 {
-    <partial name="_DeleteModalPartial" model="@Model.Post" />
+    <partial name="_DeleteModalPartial" model="@Model.Post"/>
+    <div id="deleteCommentModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Comment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this comment?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                    <form asp-action="DeleteComment" asp-route-slug="@Model.Post.Slug" asp-route-id="0">
+                        <button type="submit" class="btn btn-danger">Yes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+            $('#deleteCommentModal').on('show.bs.modal',
+                function(event) {
+                    var button = $(event.relatedTarget);
+                    var id = button.data('id');
+                    var form = $(this).find('form');
+                    var action = form.attr('action');
+                    action = action.substring(0, action.lastIndexOf("/") + 1) + id;
+                    form.attr('action', action);
+                })
+        </script>
+    }
 }

@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using SimpleBlog.Infrastructures.GuardClauses;
 using SimpleBlog.Models;
 using SimpleBlog.Services;
 using SimpleBlog.ViewModels;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -181,6 +183,22 @@ namespace SimpleBlog.Controllers
             }
 
             post.Comments.Add(comment);
+            await _postService.Update(post);
+
+            return RedirectToAction(nameof(Article), new { slug });
+        }
+
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [HttpPost("{slug}/comment/delete/{id}")]
+        public async Task<IActionResult> DeleteComment(string slug, int id)
+        {
+            var post = await _postService.GetBySlug(slug);
+
+            var comment = post.Comments.FirstOrDefault(c => c.Id == id);
+            Guard.Against.NullThrow404NotFound(comment, nameof(comment));
+
+            post.Comments.Remove(comment);
             await _postService.Update(post);
 
             return RedirectToAction(nameof(Article), new { slug });
