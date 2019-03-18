@@ -11,7 +11,7 @@
             @if (User.Identity.IsAuthenticated)
             {
                 <div>
-                    <button id="delete" class="btn btn-danger btn-sm" type="button" data-toggle="modal" data-target="#deleteModal">Delete</button>
+                    <button class="btn btn-danger btn-sm" type="button" data-toggle="modal" data-target="#deleteModal">Delete</button>
                     <a class="btn btn-primary btn-sm ml-2" asp-action="Edit" asp-route-id="@Model.Post.Id">Edit</a>
                 </div>
             }

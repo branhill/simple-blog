@@ -1,11 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SimpleBlog.Data;
+using SimpleBlog.Infrastructures.Exceptions;
 using SimpleBlog.Infrastructures.GuardClauses;
 using SimpleBlog.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -26,14 +29,20 @@ namespace SimpleBlog.Services
             _memoryCache = memoryCache;
         }
 
-        public async Task<Category> GetBySlug(string slug)
+        public async Task<Category> GetBy(Expression<Func<Category, bool>> predicate)
         {
             var category = await _categories
-                .FirstOrDefaultAsync(c => c.Slug == slug);
+                .FirstOrDefaultAsync(predicate);
 
-            Guard.Against.NullOrEmptyThrow404NotFound(category, nameof(category));
+            Guard.Against.NullThrow404NotFound(category, nameof(category));
             return category;
         }
+
+        public Task<Category> GetById(int id) =>
+            GetBy(c => c.Id == id);
+
+        public Task<Category> GetBySlug(string slug) =>
+            GetBy(c => c.Slug == slug);
 
         public async Task<IList<Category>> List(bool isFlat = false)
         {
@@ -65,8 +74,37 @@ namespace SimpleBlog.Services
 
         public async Task<Category> Update(Category entity)
         {
-            _categories.Update(entity);
-            await _dbContext.SaveChangesAsync();
+            Guard.Against.EqualsThrowBadRequest(entity.Id, entity.ParentId, nameof(entity.Id), nameof(entity.ParentId));
+            using (var transaction = _dbContext.Database.BeginTransaction())
+            {
+                _categories.Update(entity);
+                await _dbContext.SaveChangesAsync();
+
+                var newList = await _categories
+                    .Include(c => c.Parent)
+                    .Include(c => c.Subcategories)
+                    .ToListAsync();
+
+                var self = newList.First(c => c.Id == entity.Id);
+                var ids = new HashSet<int>
+                {
+                    self.Id
+                };
+                var parent = self.Parent;
+                while (parent != null)
+                {
+                    if (ids.Contains(parent.Id))
+                    {
+                        transaction.Rollback();
+                        throw new StatusCodeException(StatusCodes.Status400BadRequest, "Category circular referencing detected.");
+                    }
+
+                    ids.Add(parent.Id);
+                    parent = parent.Parent;
+                }
+
+                transaction.Commit();
+            }
 
             EvictAllCache();
             return entity;

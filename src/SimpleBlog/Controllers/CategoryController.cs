@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SimpleBlog.Services;
 using SimpleBlog.ViewModels;
@@ -11,11 +12,13 @@ namespace SimpleBlog.Controllers
     {
         private readonly CategoryService _categoryService;
         private readonly PostController _postController;
+        private readonly IMapper _mapper;
 
-        public CategoryController(CategoryService categoryService, PostController postController)
+        public CategoryController(CategoryService categoryService, PostController postController, IMapper mapper)
         {
             _categoryService = categoryService;
             _postController = postController;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -51,6 +54,7 @@ namespace SimpleBlog.Controllers
             }
             else
             {
+                category.Id = id.Value;
                 await _categoryService.Update(category);
             }
 

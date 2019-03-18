@@ -38,6 +38,15 @@ namespace SimpleBlog.Infrastructures.GuardClauses
                     $"Requested {parameterName} was null or empty."));
         }
 
+        /// <exception cref="StatusCodeException"></exception>
+        public static void EqualsThrowBadRequest(this IGuardClause guard, object inputA, object inputB,
+            string parameterNameA, string parameterNameB = null)
+        {
+            if (Equals(inputA, inputB))
+                throw new StatusCodeException(StatusCodes.Status400BadRequest,
+                    $"Requested {parameterNameA} not equals to {parameterNameB ?? parameterNameA}.");
+        }
+
         private static void NullOrEmptyThrow(object input, StatusCodeException exception)
         {
             switch (input)

@@ -2,6 +2,7 @@
 @inject CategoryService CategoryService
 @inject TagService TagService
 @{
+    ViewBag.Title = $"Edit {Model.Title}";
     ViewBag.Categories = (await CategoryService.List(true))
         .Select(c => new SelectListItem(c.Name, c.Id.ToString()))
         .ToList();
