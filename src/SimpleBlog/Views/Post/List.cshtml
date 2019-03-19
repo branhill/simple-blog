@@ -3,6 +3,12 @@
     ViewData["Title"] = Model.Title;
 }
 
+@if (!Model.List.Any())
+{
+    <div class="text-center">
+        <p>Oops, no posts here.</p>
+    </div>
+}
 @foreach (var item in Model.List)
 {
     <div class="card mt-3">

@@ -17,6 +17,12 @@
         {
             <button id="delete" class="btn btn-primary btn mb-3" type="button" data-toggle="modal" data-target="#createModal">New</button>
         }
+        @if (!Model.Categories.Any())
+        {
+            <div class="text-center">
+                <p>Oops, no categories here.</p>
+            </div>
+        }
         <partial name="_ListPartial" model="@Model.Categories"/>
     </div>
 </div>
