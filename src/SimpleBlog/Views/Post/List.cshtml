@@ -25,7 +25,7 @@
             <p class="card-text">
                 <a class="btn btn-light btn-sm" asp-controller="Category" asp-action="PostList" asp-route-slug="@item.Category.Slug">@Html.DisplayFor(m => item.Category.Name)</a>
                 <small class="text-muted">
-                    - <a href="#">@Html.DisplayFor(m => item.Author.UserName)</a>
+                    - <a>@Html.DisplayFor(m => item.Author.UserName)</a>
                     - <time datetime="@item.CreatedTime.ToString("u")">@Html.DisplayFor(m => item.CreatedTime)</time>
                 </small>
             </p>

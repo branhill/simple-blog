@@ -13,6 +13,7 @@
     <title>@(!string.IsNullOrEmpty(ViewData["Title"] as string) ? $"{ViewData["Title"]} - {Config.Value.SiteName}" : Config.Value.SiteName)</title>
     <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.css" />
     <link rel="stylesheet" href="~/css/site.css" />
+    @RenderSection("Stylesheets", required: false)
 </head>
 <body>
 <header>

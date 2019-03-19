@@ -6,7 +6,22 @@
     ViewBag.Categories = (await CategoryService.List(true))
         .Select(c => new SelectListItem(c.Name, c.Id.ToString()))
         .ToList();
-    ViewBag.Tags = await TagService.List();
+    var tagList= await TagService.List();
+    var tag = "";
+    if (tagList.Any())
+    {
+        tag = tagList
+            .Select(t => $"'{t.Name}'")
+            .Aggregate((sum, next) => sum + ", " + next);
+    }
+    ViewBag.Tags = tag;
+}
+
+
+@section Stylesheets
+{
+    <link rel="stylesheet" href="~/lib/bootstrap-tagsinput/bootstrap-tagsinput.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-tagsinput/bootstrap-tagsinput-typeahead.css" />
 }
 
 <div class="card">
@@ -28,7 +43,7 @@
 
             <div class="form-group col">
                 <label asp-for="Tags"></label>
-                <input asp-for="Tags" class="form-control"/>
+                <input asp-for="Tags" class="form-control" data-role="tagsinput"/>
                 <span asp-validation-for="Tags" class="form-text text-danger"></span>
             </div>
         </div>
@@ -67,6 +82,9 @@
 @section Scripts{
     <partial name="_ValidationScriptsPartial" />
     <script src="~/lib/tinymce/tinymce.min.js"></script>
+    <script src="~/lib/typeahead.js/typeahead.jquery.min.js"></script>
+    <script src="~/lib/typeahead.js/bloodhound.min.js"></script>
+    <script src="~/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js"></script>
 
     <script>
         tinymce.init({
@@ -75,7 +93,20 @@
         });
 
         $('@($"#{nameof(Model.IsDraft)}")').on('change', function() {
-                $('#submit').text(this.checked ? 'Save' : 'Publish');
-            });
+            $('#submit').text(this.checked ? 'Save' : 'Publish');
+        });
+
+        var tags = new Bloodhound({
+            local: [@Html.Raw(tag)],
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            datumTokenizer: Bloodhound.tokenizers.whitespace
+        });
+        tags.initialize();
+
+        $('#Tags').tagsinput({
+            typeaheadjs: {
+                source: tags.ttAdapter()
+            }
+        });
     </script>
 }
