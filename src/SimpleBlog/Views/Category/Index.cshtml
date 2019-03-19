@@ -55,7 +55,6 @@
             </div>
         </div>
     </div>
-
     <div id="editModal" class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -88,6 +87,28 @@
             </div>
         </div>
     </div>
+    <div id="deleteModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Category</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete category <b id="delete-name"></b>?</p>
+                    <b id="canNotBeDelete">Please move all posts in the category before delete it.</b>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                    <form asp-action="Delete" asp-route-id="0">
+                        <button id="deleteSubmit" type="submit" class="btn btn-danger" disabled>Yes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     @section Scripts {
         <script>
@@ -104,7 +125,32 @@
                 modal.find('.modal-title').text('Edit ' + button.data('name'));
                 modal.find('.modal-body #Category_Name').val(button.data('name'));
                 modal.find('.modal-body #Category_ParentId').val(button.data('parentid'));
-            })
+            });
+
+            $('#deleteModal').on('show.bs.modal', function(event) {
+                var button = $(event.relatedTarget);
+                var modal = $(this);
+                var id = button.data('id');
+                var form = modal.find('form');
+                var action = form.attr('action');
+                action = action.substring(0, action.lastIndexOf("/") + 1) + id;
+                form.attr('action', action);
+
+                modal.find('#delete-name').text(button.data('name'));
+                var canNotBeDelete = modal.find('#canNotBeDelete');
+                var deleteSubmit = modal.find('#deleteSubmit');
+                canNotBeDelete.show();
+                deleteSubmit.prop('disabled', true);
+
+                var canBeDeleteUrl = '@Url.Action("CanBeDelete", new { id = 0 })';
+                $.getJSON(canBeDeleteUrl.substring(0, canBeDeleteUrl.lastIndexOf("/") + 1) + id, function(result) {
+                        if (result === true) {
+                            modal.find('#canNotBeDelete').hide();
+                            modal.find('#deleteSubmit ').prop('disabled', false);
+                        }
+                    }
+                );
+            });
         </script>
     }
 }

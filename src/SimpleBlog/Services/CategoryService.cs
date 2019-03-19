@@ -112,9 +112,20 @@ namespace SimpleBlog.Services
 
         public async Task Delete(Category entity)
         {
+            var canBeDelete = await CanBeDelete(entity.Id);
+            if (!canBeDelete)
+                throw new StatusCodeException(StatusCodes.Status400BadRequest,
+                    "Please move all posts in the category before delete it.");
+
             _categories.Remove(entity);
             await _dbContext.SaveChangesAsync();
             EvictAllCache();
+        }
+
+        public async Task<bool> CanBeDelete(int id)
+        {
+            var result = await _dbContext.Posts.AnyAsync(p => p.CategoryId == id);
+            return !result;
         }
 
         public void EvictAllCache()

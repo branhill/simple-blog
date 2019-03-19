@@ -6,6 +6,7 @@
 <div class="card">
     <div class="card-body">
         <h1>@Model.Post.Title</h1>
+        <a class="btn btn-light btn-sm" asp-controller="Category" asp-action="PostList" asp-route-slug="@Model.Post.Category.Slug">@Html.DisplayFor(m => m.Post.Category.Name)</a>
         <div class="d-flex justify-content-between">
             <p class="card-text">@Model.Post.Author.UserName</p>
             @if (User.Identity.IsAuthenticated)
@@ -121,15 +122,14 @@
 
     @section Scripts {
         <script>
-            $('#deleteCommentModal').on('show.bs.modal',
-                function(event) {
-                    var button = $(event.relatedTarget);
-                    var id = button.data('id');
-                    var form = $(this).find('form');
-                    var action = form.attr('action');
-                    action = action.substring(0, action.lastIndexOf("/") + 1) + id;
-                    form.attr('action', action);
-                })
+            $('#deleteCommentModal').on('show.bs.modal', function(event) {
+                var button = $(event.relatedTarget);
+                var id = button.data('id');
+                var form = $(this).find('form');
+                var action = form.attr('action');
+                action = action.substring(0, action.lastIndexOf("/") + 1) + id;
+                form.attr('action', action);
+            });
         </script>
     }
 }

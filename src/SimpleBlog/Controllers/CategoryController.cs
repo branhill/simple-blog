@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SimpleBlog.Services;
 using SimpleBlog.ViewModels;
@@ -12,13 +11,11 @@ namespace SimpleBlog.Controllers
     {
         private readonly CategoryService _categoryService;
         private readonly PostController _postController;
-        private readonly IMapper _mapper;
 
-        public CategoryController(CategoryService categoryService, PostController postController, IMapper mapper)
+        public CategoryController(CategoryService categoryService, PostController postController)
         {
             _categoryService = categoryService;
             _postController = postController;
-            _mapper = mapper;
         }
 
         [HttpGet]
@@ -59,6 +56,25 @@ namespace SimpleBlog.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [HttpPost("[action]/{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var category = await _categoryService.GetById(id);
+            await _categoryService.Delete(category);
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize]
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> CanBeDelete(int id)
+        {
+            var result = await _categoryService.CanBeDelete(id);
+            return Ok(result);
         }
     }
 }

@@ -54,6 +54,7 @@ namespace SimpleBlog
                 .AddControllersAsServices();
 
             services.AddMemoryCache();
+            services.AddHttpContextAccessor();
             services.AddAutoMapper();
 
             services.Configure<Config>(Configuration.GetSection(nameof(Config)));

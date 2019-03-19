@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SimpleBlog.Infrastructures.GuardClauses;
@@ -21,17 +22,20 @@ namespace SimpleBlog.Controllers
         private readonly TagService _tagService;
         private readonly IMapper _mapper;
         private readonly UserManager<User> _userManager;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PostController(
             PostService postService,
             TagService tagService,
             IMapper mapper,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IHttpContextAccessor httpContextAccessor)
         {
             _postService = postService;
             _tagService = tagService;
             _mapper = mapper;
             _userManager = userManager;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet("/")]
@@ -138,7 +142,8 @@ namespace SimpleBlog.Controllers
         [NonAction]
         public async Task<IActionResult> List(Func<Post, bool> predicate, int page, string title)
         {
-            if (!User.Identity.IsAuthenticated)
+            var user = User ?? _httpContextAccessor.HttpContext.User;
+            if (!user.Identity.IsAuthenticated)
             {
                 var oldPredicate = predicate;
                 predicate = p => p.IsDraft == false && oldPredicate(p);
