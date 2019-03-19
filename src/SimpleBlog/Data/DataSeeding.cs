@@ -19,7 +19,7 @@ namespace SimpleBlog.Data
             {
                 var admin = new User
                 {
-                    UserName = "Admin",
+                    UserName = "admin@example.com",
                     Email = "admin@example.com"
                 };
                 userManager.CreateAsync(admin, "Passw0rd.").Wait();
@@ -46,12 +46,12 @@ namespace SimpleBlog.Data
                     .RuleFor(c => c.Content, f => f.Lorem.Paragraph());
 
                 var postFaker = new Faker<Post>()
-                    .RuleFor(p => p.Title, f => f.Lorem.Sentence())
+                    .RuleFor(p => p.Title, f => f.Lorem.Sentence().TrimEnd('.'))
                     .RuleFor(p => p.Author, f => admin)
                     .RuleFor(p => p.IsDraft, f => false)
                     .RuleFor(p => p.Excerpt, f => f.Lorem.Paragraph())
                     .RuleFor(p => p.Content, f => Enumerable.Range(0, f.Random.Int(10, 50))
-                        .Select(_ => f.Lorem.Paragraph())
+                        .Select(_ => $"<p>{f.Lorem.Paragraph()}</p>")
                         .Aggregate((sum, next) => sum + Environment.NewLine + next))
                     .RuleFor(p => p.Category, f => fakeCategories[f.Random.Int(0, fakeCategories.Count - 1)])
                     .RuleFor(p => p.TagPosts, (f, p) => Enumerable.Range(0, f.Random.Int(0, 5))

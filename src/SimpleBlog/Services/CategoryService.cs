@@ -96,7 +96,8 @@ namespace SimpleBlog.Services
                     if (ids.Contains(parent.Id))
                     {
                         transaction.Rollback();
-                        throw new StatusCodeException(StatusCodes.Status400BadRequest, "Category circular referencing detected.");
+                        throw new StatusCodeException(StatusCodes.Status400BadRequest,
+                            "Category circular referencing detected.");
                     }
 
                     ids.Add(parent.Id);

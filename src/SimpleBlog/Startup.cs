@@ -12,6 +12,7 @@ using SimpleBlog.Data;
 using SimpleBlog.Infrastructures;
 using SimpleBlog.Infrastructures.Filters;
 using SimpleBlog.Models;
+using System;
 using System.Linq;
 using System.Reflection;
 
@@ -29,9 +30,25 @@ namespace SimpleBlog
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var configSection = Configuration.GetSection(nameof(Config));
+            services.Configure<Config>(configSection);
+            var appConfig = new Config();
+            configSection.Bind(appConfig);
+
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+            {
+                switch (appConfig.Database.Provider)
+                {
+                    case Config.DatabaseModel.ProviderEnum.SqlServer:
+                        options.UseSqlServer(appConfig.Database.ConnectionStrings);
+                        break;
+                    case Config.DatabaseModel.ProviderEnum.Sqlite:
+                        options.UseSqlite(appConfig.Database.ConnectionStrings);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(appConfig.Database.Provider));
+                }
+            });
             services.AddDefaultIdentity<User>()
                 .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<AppDbContext>();
@@ -56,8 +73,6 @@ namespace SimpleBlog
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
             services.AddAutoMapper();
-
-            services.Configure<Config>(Configuration.GetSection(nameof(Config)));
 
             var appServices = Assembly.GetExecutingAssembly().ExportedTypes
                 .Where(t => t.Namespace.EndsWith(".Services") && t.Name.EndsWith("Service"));
