@@ -18,10 +18,14 @@ namespace SimpleBlog
             {
                 var services = scope.ServiceProvider;
                 var config = services.GetRequiredService<IConfiguration>();
+
+                var dbContext = services.GetRequiredService<AppDbContext>();
+                dbContext.Database.EnsureCreated();
+
                 if (config.GetValue("Development:IsDataSeedingEnabled", false))
                 {
                     var userManager = services.GetRequiredService<UserManager<User>>();
-                    var dbContext = services.GetRequiredService<AppDbContext>();
+                    
                     DataSeeding.Seed(dbContext, userManager);
                 }
             }
